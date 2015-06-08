@@ -22,7 +22,7 @@ namespace :db do
   desc 'Seed the database'  
   task :seed  => [:connect] do
     dataset = DB[:items]
-    CSV.foreach(SEED_FILE, :headers => true, header_converters: :symbol) do |item|
+    CSV.foreach(SEED_FILE, :headers => true, header_converters: :symbol, encoding: "UTF-8") do |item|
       item = item.to_hash
       dataset.insert(:ark => item[:noid], :guid => item[:guid], :image => item[:image_id])
       print '.'
