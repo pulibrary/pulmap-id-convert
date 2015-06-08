@@ -13,10 +13,13 @@ $(document).ready(function(){
     });
    }
 	function populateDataFields(ids) {
-      $('#lookupVal').val('');
-      setId(ids.ark, '#ark-val');
-      setId(ids.guid, '#guid-val');
-      setId(ids.image, '#image-val');
+    $('#lookupVal').val('');
+    setId(ids.ark, '#ark-val');
+    setId(ids.guid, '#guid-val');
+    setId(ids.image, '#image-val');
+
+    //set input focus
+    $('#lookupVal').focus();
 	}
   function setId(id, selector) {
     if (id) {
@@ -32,7 +35,7 @@ $(document).ready(function(){
   function setupCopyToClipboardButton(buttonId) {
     new ZeroClipboard( document.getElementById(buttonId) );
   }
-  function setupEvents(){
+  function setup(){
     $('#getArk').click(function(e) {
 	    e.preventDefault();
   		getRelatedIds('arks', $('#lookupVal').val());
@@ -54,7 +57,10 @@ $(document).ready(function(){
 
     // setup tootip
     $('[data-toggle="tooltip"]').tooltip();
+
+    //set input focus
+    $('#lookupVal').focus();
   }
 
-  setupEvents();
+  setup();
 });
