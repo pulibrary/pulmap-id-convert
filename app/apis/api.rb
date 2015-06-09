@@ -1,7 +1,8 @@
 require 'grape'
 require 'json'
 
-module APIHelpers  
+# Helpers for id items API.
+module APIHelpers
   def get_item(id_type)
     item = Item.where(id_type => params[id_type]).first
     if item.blank?
@@ -12,29 +13,29 @@ module APIHelpers
   end
 end
 
+# Item API routing.
 class API < Grape::API
   format :json
 
   helpers APIHelpers
 
   resource :items do
-    desc "Returns all items"
+    desc 'Returns all items'
     get do
-      Item.all.map { |i| i.to_hash }
+      Item.all.map(&:to_hash)
     end
   end
 
   resource :arks do
-
-    desc "Returns list of ARKs"
+    desc 'Returns list of ARKs'
     get do
-       Item.all.reject{ |i| i.ark.blank? }.map{ |i| i.ark }
+      Item.all.reject { |i| i.ark.blank? }.map(&:ark)
     end
 
     route_param :ark do
-      desc "Returns any alternate ids related to the ARK"
+      desc 'Returns any alternate ids related to the ARK'
       params do
-        requires :ark, type: String, desc: "Archival Resouce Key (ARK) for item"
+        requires :ark, type: String, desc: 'Archival Resouce Key (ARK) for item'
       end
 
       get do
@@ -44,16 +45,15 @@ class API < Grape::API
   end
 
   resource :guids do
-
-    desc "Returns list of guids"
+    desc 'Returns list of guids'
     get do
-       Item.all.reject{ |i| i.guid.blank? }.map{ |i| i.guid }
+      Item.all.reject { |i| i.guid.blank? }.map(&:guid)
     end
 
     route_param :guid do
-      desc "Returns any alternate ids related to the guid"
+      desc 'Returns any alternate ids related to the guid'
       params do
-        requires :guid, type: String, desc: "FGDC guid"
+        requires :guid, type: String, desc: 'FGDC guid'
       end
 
       get do
@@ -63,16 +63,15 @@ class API < Grape::API
   end
 
   resource :images do
-
-    desc "Returns list of image numbers"
+    desc 'Returns list of image numbers'
     get do
-       Item.all.reject{ |i| i.image.blank? }.map{ |i| i.image }
+      Item.all.reject { |i| i.image.blank? }.map(&:image)
     end
 
     route_param :image do
-      desc "Returns any alternate ids related to the image number"
+      desc 'Returns any alternate ids related to the image number'
       params do
-        requires :image, type: String, desc: "Scanned map image number"
+        requires :image, type: String, desc: 'Scanned map image number'
       end
 
       get do
@@ -82,28 +81,30 @@ class API < Grape::API
   end
 end
 
+# Class to return static files.
 class Web
- 
   def initialize(options)
     @try = ['', *options.delete(:try)]
     @static = ::Rack::Static.new(
-      lambda { [404, {}, []] }, 
+      -> { [404, {}, []] },
       options)
   end
-    
+
+  def find
+    found = nil
+    @try.each do |path|
+      resp = @static.call(env.merge!('PATH_INFO' => orig_path + path))
+      break if resp[0] != 404 && found == resp
+    end
+    found || [404, {}, []]
+  end
+
   def call(env)
     orig_path = env['PATH_INFO']
-    # there's probably a better way to do this
     if orig_path.starts_with?('/api/')
-        API.call(env)
+      API.call(env)
     else
-      found = nil
-      @try.each do |path|
-        resp = @static.call(env.merge!({'PATH_INFO' => orig_path + path}))
-        break if 404 != resp[0] && found = resp
-      end
-      found or [404, {}, []]
+      find
     end
   end
-  
 end

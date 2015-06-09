@@ -7,6 +7,7 @@ gem 'sequel'
 gem 'thin'
 
 gem 'byebug'
+gem 'rubocop', require: false
 
 gem 'rspec'
 gem 'capybara'
