@@ -1,14 +1,13 @@
 require 'rubygems'
-require 'bundler' 
+require 'bundler'
 require 'sequel'
 require 'yaml'
 require 'csv'
 
 namespace :db do
-
   config = YAML.load_file("#{Dir.pwd}/config/database.yml")
   SEED_FILE = './db/items.csv'
-  ENV['DATABASE_URL'] = "sqlite://#{Dir.pwd}/master.db"
+  ENV['DATABASE_URL'] = "sqlite://#{Dir.pwd}/#{config['database']}.db"
 
   task :connect do
     if ENV['DATABASE_URL']
@@ -19,12 +18,17 @@ namespace :db do
     end
   end
 
-  desc 'Seed the database'  
-  task :seed  => [:connect] do
+  desc 'Seed the database'
+  task seed: [:connect] do
     dataset = DB[:items]
-    CSV.foreach(SEED_FILE, :headers => true, header_converters: :symbol, encoding: "UTF-8") do |item|
+    CSV.foreach(SEED_FILE,
+                headers: true,
+                header_converters: :symbol,
+                encoding: 'UTF-8') do |item|
       item = item.to_hash
-      dataset.insert(:ark => item[:noid], :guid => item[:guid], :image => item[:image_id])
+      dataset.insert(ark: item[:noid],
+                     guid: item[:guid],
+                     image: item[:image_id])
       print '.'
     end
     puts '*** database seeded ***'
@@ -32,35 +36,35 @@ namespace :db do
 
   namespace :migrate do
     Sequel.extension :migration
- 
+
     desc 'Perform migration reset (full erase and migration up).'
-    task :reset => [:connect] do
-      Sequel::Migrator.run(DB, "#{Dir.pwd}/db/migrate", :target => 0)
+    task reset: [:connect] do
+      Sequel::Migrator.run(DB, "#{Dir.pwd}/db/migrate", target: 0)
       Sequel::Migrator.run(DB, "#{Dir.pwd}/db/migrate")
       puts '*** db:migrate:reset executed ***'
     end
- 
+
     desc 'Perform migration up/down to VERSION.'
-    task :to => [:connect] do
+    task to: [:connect] do
       version = ENV['VERSION'].to_i
       if version == 0
-        puts 'VERSION must be larger than 0. Use rake db:migrate:down to erase all data.'
+        puts 'VERSION > 0. Use rake db:migrate:down to erase all data.'
         exit false
       end
- 
-      Sequel::Migrator.run(DB, "#{Dir.pwd}/db/migrate", :target => version)
+
+      Sequel::Migrator.run(DB, "#{Dir.pwd}/db/migrate", target: version)
       puts "*** db:migrate:to VERSION=[#{version}] executed ***"
     end
- 
+
     desc 'Perform migration up to latest migration available.'
-    task :up => [:connect] do
+    task up: [:connect] do
       Sequel::Migrator.run(DB, "#{Dir.pwd}/db/migrate")
       puts '*** db:migrate:up executed ***'
     end
- 
+
     desc 'Perform migration down (erase all data).'
-    task :down => [:connect] do
-      Sequel::Migrator.run(DB, "#{Dir.pwd}/db/migrate", :target => 0)
+    task down: [:connect] do
+      Sequel::Migrator.run(DB, "#{Dir.pwd}/db/migrate", target: 0)
       puts '*** db:migrate:down executed ***'
     end
   end
@@ -75,8 +79,3 @@ namespace :db do
     end
   end
 end
-
-
-
-
-

@@ -7,7 +7,10 @@ require 'items'
 require 'api'
 
 # Setup Rack
-run Rack::URLMap.new({
-	"/"  => Rack::Static.new(Web, :urls => ["/"], :root => "public/dist", :index => 'index.html'),
-  "/api" => API.new                          
-})
+run Rack::URLMap.new(
+  '/'  => Rack::Static.new(Web,
+                           urls: ['/'],
+                           root: 'public/dist',
+                           index: 'index.html'),
+  '/api' => API.new
+)
