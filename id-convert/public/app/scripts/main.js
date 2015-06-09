@@ -3,7 +3,7 @@
 $(document).ready(function(){
   'use strict';
 
-  var APIBase = '/api/';
+  var APIBase = 'api/';
 
   function getRelatedIds(idType, id){
   	var url = APIBase + idType + '/' + id;
