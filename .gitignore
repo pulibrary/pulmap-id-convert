@@ -5,11 +5,8 @@ dist
 *.gem
 *.rbc
 *.log
-<<<<<<< HEAD
 .jshintrc
-=======
 *.db
->>>>>>> 96fcfe1... add rspec tests
 
 .bundle
 .config
