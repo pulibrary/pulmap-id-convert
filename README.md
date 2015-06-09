@@ -14,5 +14,5 @@
 	$ bundle install
 	$ rake db:migrate:up
 	$ rake db:seed
-	$ rackup
+	$ thin start
 ```
